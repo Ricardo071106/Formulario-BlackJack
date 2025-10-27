@@ -26,7 +26,7 @@ body {
 
 header.container { display: flex; align-items: center; justify-content: space-between; }
 header h1 { margin: 0; font-size: 1.5rem; }
-.site-title { flex: 1; text-align: center; font-size: 1.8rem; white-space: nowrap; line-height: 1.2; }
+.site-title { flex: 1; text-align: center; font-size: clamp(1.6rem, 7vw, 3.2rem); white-space: nowrap; line-height: 1.2; }
 header nav a { color: var(--text); text-decoration: none; opacity: .8; }
 header nav a:hover { opacity: 1; }
 
@@ -75,7 +75,7 @@ input[type="text"], input[type="email"], input[type="tel"] {
 
 .regulamento-note {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 24px;
   margin-bottom: 8px;
   color: var(--muted);
 }
@@ -95,7 +95,7 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 640px) {
   .grid-2 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
-  .site-title { font-size: 1.3rem; }
+  .site-title { font-size: clamp(1.2rem, 8vw, 2rem); }
 }
 
 
