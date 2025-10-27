@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const { appendParticipant } = require('./googleSheets');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -222,6 +223,8 @@ app.post('/reserve-number', (req, res) => {
             created_at: new Date().toISOString(),
           };
           broadcastSse({ type: 'participant_created', participant });
+          // Best-effort sheets append (async, não bloqueia a resposta)
+          appendParticipant(participant).catch(() => {});
           return res.json({ ok: true, message: 'Reserva efetuada com sucesso.', participant });
         });
       }

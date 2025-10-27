@@ -37,3 +37,11 @@ npm run start
 - Validações de CPF, e-mail, telefone e número são aplicadas no backend.
 - Constraint UNIQUE em `raffle_number` garante que o mesmo número não seja reservado 2x.
 - A tabela de participantes atualiza em tempo real via SSE.
+
+## Integração com Google Sheets (opcional)
+Preencha variáveis de ambiente e compartilhe a planilha com o e-mail da Service Account.
+- `GOOGLE_SHEETS_ENABLED=true`
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL=...@...gserviceaccount.com`
+- `GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"` (atenção às quebras de linha com \n)
+- `GOOGLE_SHEETS_SPREADSHEET_ID=ID_DA_PLANILHA`
+- `GOOGLE_SHEETS_SHEET_NAME=Participants` (opcional)
