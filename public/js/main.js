@@ -30,11 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
     number.value = formatNumberInput(number.value);
   });
 
-  // Ao sair do campo, formata para 4 dígitos se válido
+  // Ao sair do campo, formata para 4 dígitos se válido (agora 0000-9999)
   number.addEventListener('blur', () => {
     const d = onlyDigits(number.value).slice(0,4);
     const n = parseInt(d||'');
-    if (!Number.isNaN(n) && n>=1 && n<=9999){
+    if (!Number.isNaN(n) && n>=0 && n<=9999){
       number.value = pad4(n);
     } else {
       number.value = d; // mantém apenas os dígitos
@@ -60,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCheck.addEventListener('click', async () => {
     const d = onlyDigits(number.value).slice(0,4);
     const n = parseInt(d||'');
-    if (!n || n<1 || n>9999){
-      showStatus(statusEl, 'Digite um número entre 0001 e 9999.', 'error');
+    if (Number.isNaN(n) || n<0 || n>9999){
+      showStatus(statusEl, 'Digite um número entre 0000 e 9999.', 'error');
       return;
     }
     const val = pad4(n);
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Normaliza número antes de enviar
     const d = onlyDigits(number.value).slice(0,4);
     const n = parseInt(d||'');
-    const normalizedNumber = (!Number.isNaN(n) && n>=1 && n<=9999) ? pad4(n) : d;
+    const normalizedNumber = (!Number.isNaN(n) && n>=0 && n<=9999) ? pad4(n) : d;
 
     const payload = {
       fullName: fullName.value.trim(),
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       email: email.value.trim(),
       store: store.value.trim(),
       number: normalizedNumber,
-      accepted: accepted.checked
+      accepted: true
     };
     try{
       const res = await fetch('/reserve-number', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});

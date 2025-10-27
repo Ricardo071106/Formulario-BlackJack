@@ -136,14 +136,14 @@ function isValidCPF(cpf) {
 function formatRaffleNumber(input) {
   if (typeof input === 'number') {
     if (!Number.isInteger(input)) return null;
-    if (input < 1 || input > 9999) return null;
+    if (input < 0 || input > 9999) return null;
     return String(input).padStart(4, '0');
   }
   const str = String(input || '').trim();
   const digits = onlyDigits(str);
   const num = parseInt(digits, 10);
   if (Number.isNaN(num)) return null;
-  if (num < 1 || num > 9999) return null;
+  if (num < 0 || num > 9999) return null;
   return String(num).padStart(4, '0');
 }
 
@@ -204,7 +204,7 @@ async function listCpfsFromSheets() {
 app.post('/check-number', async (req, res) => {
   const formatted = formatRaffleNumber(req.body?.number);
   if (!formatted) {
-    return res.status(400).json({ ok: false, message: 'Número inválido. Use 0001 a 9999.' });
+    return res.status(400).json({ ok: false, message: 'Número inválido. Use 0000 a 9999.' });
   }
   try {
     const sheetsTaken = await listTakenNumbersFromSheets();
@@ -238,11 +238,11 @@ app.get('/random-number', async (req, res) => {
     });
   } catch (_) {
     // fallback to DB only
-    db.all('SELECT raffle_number FROM participants', (err, rows) => {
+  db.all('SELECT raffle_number FROM participants', (err, rows) => {
       if (err) return res.status(500).json({ ok: false, message: 'Erro no banco.' });
       const used = new Set((rows || []).map(r => r.raffle_number));
       const available = [];
-      for (let i = 1; i <= 9999; i++) {
+    for (let i = 0; i <= 9999; i++) {
         const num = String(i).padStart(4, '0');
         if (!used.has(num)) available.push(num);
       }
@@ -261,7 +261,7 @@ app.post('/reserve-number', async (req, res) => {
   if (!isValidCPF(cpf)) errors.push('CPF inválido.');
   if (!isValidPhone(phone)) errors.push('Telefone inválido.');
   if (!isValidEmail(email)) errors.push('E-mail inválido.');
-  if (accepted !== true && accepted !== 'true' && accepted !== 1 && accepted !== '1' && accepted !== 'on') errors.push('É necessário aceitar o regulamento.');
+  // Checkbox removido: não exigimos aceite explícito
   if (!store || String(store).trim().length < 2) errors.push('Loja inválida.');
 
   const raffleNumber = formatRaffleNumber(number);

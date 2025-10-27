@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sorteio BlackJack</title>
+    <title>Sorteio de Natal BlackJack</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
     <header class="container">
-      <h1>Sorteio BlackJack</h1>
+      <h1>Sorteio de Natal BlackJack</h1>
     </header>
 
     <main class="container">
@@ -44,18 +44,16 @@
           <div class="grid-3">
             <label>
               Escolha uma milhar
-              <input type="text" id="number" name="number" placeholder="0001" inputmode="numeric" maxlength="4" required />
+              <input type="text" id="number" name="number" placeholder="0000" inputmode="numeric" maxlength="4" required />
             </label>
             <div class="btn-row">
               <button type="button" id="btnRandom" class="btn secondary">Escolher aleatório</button>
               <button type="button" id="btnCheck" class="btn outline">Verificar</button>
             </div>
           </div>
-
-          <label class="checkbox">
-            <input type="checkbox" id="accepted" name="accepted" required />
-            <span>Li e aceito o regulamento.</span>
-          </label>
+          <div class="status" style="margin-top:4px;">
+            Confira o regulamento.
+          </div>
 
           <div id="status" class="status" role="status" aria-live="polite"></div>
 
@@ -64,7 +62,7 @@
       </section>
     </main>
 
-    <footer class="container footer">&copy; <span id="year"></span> Sorteio BlackJack</footer>
+    <footer class="container footer">&copy; <span id="year"></span> Sorteio de Natal BlackJack</footer>
 
     <script src="/js/main.js"></script>
   </body>
