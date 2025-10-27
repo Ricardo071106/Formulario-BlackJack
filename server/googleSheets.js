@@ -48,21 +48,53 @@ async function appendParticipant(participant) {
 
   function buildRange(sheetName) {
     const escaped = String(sheetName).replace(/'/g, "''");
-    return `'${escaped}'!A1`;
+    return `'${escaped}'!A2`;
+  }
+
+  async function ensureHeader() {
+    const header = ['Data','Número','Nome','CPF','Loja','Telefone','E-mail'];
+    try {
+      const current = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${String(sheetName).replace(/'/g, "''")}'!A1:G1`,
+      });
+      const values = current?.data?.values || [];
+      const firstRow = values[0] || [];
+      const matches = header.length === firstRow.length && header.every((h, i) => firstRow[i] === h);
+      if (!matches) {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `'${String(sheetName).replace(/'/g, "''")}'!A1:G1`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [header] },
+        });
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  function formatBrazilTime(isoOrString) {
+    const d = new Date(isoOrString);
+    const dtf = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const parts = dtf.formatToParts(d).reduce((acc,p)=>{acc[p.type]=p.value;return acc;},{});
+    return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}:${parts.second}`;
   }
 
   const values = [[
-    participant.id,
-    participant.created_at,
+    formatBrazilTime(participant.created_at),
     participant.raffle_number,
     participant.full_name,
     participant.cpf,
+    participant.store || '',
     participant.phone,
     participant.email,
-    participant.store || '',
   ]];
 
   try {
+    await ensureHeader();
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: buildRange(sheetName),
@@ -89,19 +121,49 @@ async function appendParticipantsBatch(participants) {
   const sheets = google.sheets({ version: 'v4', auth });
   function buildRange(sheetName) {
     const escaped = String(sheetName).replace(/'/g, "''");
-    return `'${escaped}'!A1`;
+    return `'${escaped}'!A2`;
+  }
+  async function ensureHeader() {
+    const header = ['Data','Número','Nome','CPF','Loja','Telefone','E-mail'];
+    try {
+      const current = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `'${String(sheetName).replace(/'/g, "''")}'!A1:G1`,
+      });
+      const values = current?.data?.values || [];
+      const firstRow = values[0] || [];
+      const matches = header.length === firstRow.length && header.every((h, i) => firstRow[i] === h);
+      if (!matches) {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `'${String(sheetName).replace(/'/g, "''")}'!A1:G1`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [header] },
+        });
+      }
+    } catch (_) { /* ignore */ }
+  }
+  function formatBrazilTime(isoOrString) {
+    const d = new Date(isoOrString);
+    const dtf = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const parts = dtf.formatToParts(d).reduce((acc,p)=>{acc[p.type]=p.value;return acc;},{});
+    return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}:${parts.second}`;
   }
   const values = participants.map((p) => [
-    p.id,
-    p.created_at,
+    formatBrazilTime(p.created_at),
     p.raffle_number,
     p.full_name,
     p.cpf,
+    p.store || '',
     p.phone,
     p.email,
-    p.store || '',
   ]);
   try {
+    await ensureHeader();
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: buildRange(sheetName),
