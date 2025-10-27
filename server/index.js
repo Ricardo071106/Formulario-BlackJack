@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
-const { appendParticipant } = require('./googleSheets');
+const { appendParticipant, appendParticipantsBatch } = require('./googleSheets');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,8 +52,12 @@ db.serialize(() => {
   db.all('PRAGMA table_info(participants);', (err, rows) => {
     if (err) return; // best-effort
     const hasStore = Array.isArray(rows) && rows.some((r) => String(r.name) === 'store');
+    const hasSyncedAt = Array.isArray(rows) && rows.some((r) => String(r.name) === 'sheets_synced_at');
     if (!hasStore) {
       db.run('ALTER TABLE participants ADD COLUMN store TEXT;', () => {});
+    }
+    if (!hasSyncedAt) {
+      db.run('ALTER TABLE participants ADD COLUMN sheets_synced_at DATETIME;', () => {});
     }
   });
 });
@@ -224,7 +228,13 @@ app.post('/reserve-number', (req, res) => {
           };
           broadcastSse({ type: 'participant_created', participant });
           // Best-effort sheets append (async, não bloqueia a resposta)
-          appendParticipant(participant).catch(() => {});
+          appendParticipant(participant)
+            .then((r) => {
+              if (r && r.ok) {
+                db.run('UPDATE participants SET sheets_synced_at = CURRENT_TIMESTAMP WHERE id = ?', [participant.id]);
+              }
+            })
+            .catch(() => {});
           return res.json({ ok: true, message: 'Reserva efetuada com sucesso.', participant });
         });
       }
@@ -239,8 +249,37 @@ app.get('/participants', (req, res) => {
   });
 });
 
+// Background backfill job (best-effort)
+setInterval(() => {
+  if (String(process.env.GOOGLE_SHEETS_ENABLED || '').toLowerCase() !== 'true') return;
+  db.all('SELECT id, full_name, cpf, phone, email, store, raffle_number, accepted_rules, created_at FROM participants WHERE sheets_synced_at IS NULL ORDER BY id ASC LIMIT 50', async (err, rows) => {
+    if (err || !rows || rows.length === 0) return;
+    try {
+      const r = await appendParticipantsBatch(rows);
+      if (r && r.ok) {
+        const ids = rows.map(r => r.id);
+        const placeholders = ids.map(() => '?').join(',');
+        db.run(`UPDATE participants SET sheets_synced_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`, ids);
+      }
+    } catch (_) {}
+  });
+}, 30000);
+
 // Healthcheck
 app.get('/health', (req, res) => res.json({ ok: true }));
+
+// Diagnostics for Google Sheets config (does not reveal secrets)
+app.get('/diag/sheets', (req, res) => {
+  const enabled = String(process.env.GOOGLE_SHEETS_ENABLED || '').toLowerCase();
+  res.json({
+    enabled,
+    hasEmail: Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL),
+    hasPrivateKey: Boolean(process.env.GOOGLE_PRIVATE_KEY),
+    hasCredsPath: Boolean(process.env.GOOGLE_CREDENTIALS_JSON_PATH),
+    spreadsheetIdSet: Boolean(process.env.GOOGLE_SHEETS_SPREADSHEET_ID),
+    sheetName: process.env.GOOGLE_SHEETS_SHEET_NAME || 'Participants'
+  });
+});
 
 // Fallback to index.html for root
 app.get('/', (req, res) => {
