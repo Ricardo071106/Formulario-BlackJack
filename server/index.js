@@ -227,7 +227,7 @@ app.get('/random-number', async (req, res) => {
   }
 });
 
-app.post('/reserve-number', (req, res) => {
+app.post('/reserve-number', async (req, res) => {
   const { fullName, cpf, phone, email, store, number, accepted } = req.body || {};
 
   const errors = [];
@@ -247,6 +247,14 @@ app.post('/reserve-number', (req, res) => {
 
   const acceptedRules = 1;
   const insertSql = `INSERT INTO participants (full_name, cpf, phone, email, store, raffle_number, accepted_rules) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  // Bloqueio global: consulta planilha antes de reservar
+  try {
+    const sheetsTaken = await listTakenNumbersFromSheets();
+    if (sheetsTaken && sheetsTaken.has(raffleNumber)) {
+      return res.status(409).json({ ok: false, message: 'Número já reservado (planilha).' });
+    }
+  } catch (_) { /* best-effort */ }
 
   db.serialize(() => {
     db.run('BEGIN IMMEDIATE TRANSACTION');
