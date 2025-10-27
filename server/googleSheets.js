@@ -45,6 +45,29 @@ function pad4(n) {
   return String(num).padStart(4, '0');
 }
 
+async function ensureDateFormat(sheets, spreadsheetId, sheetName) {
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId });
+    const sheet = (meta.data.sheets || []).find(s => s.properties && s.properties.title === sheetName);
+    if (!sheet || !sheet.properties || typeof sheet.properties.sheetId !== 'number') return;
+    const sheetId = sheet.properties.sheetId;
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            repeatCell: {
+              range: { sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 1 },
+              cell: { userEnteredFormat: { numberFormat: { type: 'DATE_TIME', pattern: 'dd/MM/yyyy HH:mm:ss' } } },
+              fields: 'userEnteredFormat.numberFormat'
+            }
+          }
+        ]
+      }
+    });
+  } catch (_) { /* ignore */ }
+}
+
 async function appendParticipant(participant) {
   if (!isEnabled()) return { ok: false, skipped: true, reason: 'disabled' };
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -79,6 +102,7 @@ async function appendParticipant(participant) {
           requestBody: { values: [header] },
         });
       }
+      await ensureDateFormat(sheets, spreadsheetId, sheetName);
     } catch (_) { /* ignore */ }
   }
 
@@ -151,6 +175,7 @@ async function appendParticipantsBatch(participants) {
           requestBody: { values: [header] },
         });
       }
+      await ensureDateFormat(sheets, spreadsheetId, sheetName);
     } catch (_) { /* ignore */ }
   }
   function formatBrazilTime(isoOrString) {
