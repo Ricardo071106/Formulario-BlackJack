@@ -26,6 +26,7 @@ body {
 
 header.container { display: flex; align-items: center; justify-content: space-between; }
 header h1 { margin: 0; font-size: 1.5rem; }
+.site-title { flex: 1; text-align: center; font-size: 2rem; }
 header nav a { color: var(--text); text-decoration: none; opacity: .8; }
 header nav a:hover { opacity: 1; }
 
@@ -71,6 +72,13 @@ input[type="text"], input[type="email"], input[type="tel"] {
 .status { min-height: 24px; margin: 8px 0; color: var(--muted); }
 .status.error { color: var(--danger); }
 .status.success { color: var(--primary); }
+
+.regulamento-note {
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: var(--muted);
+}
 
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
