@@ -26,7 +26,7 @@ body {
 
 header.container { display: flex; align-items: center; justify-content: space-between; }
 header h1 { margin: 0; font-size: 1.5rem; }
-.site-title { flex: 1; text-align: center; font-size: 2rem; }
+.site-title { flex: 1; text-align: center; font-size: 1.8rem; white-space: nowrap; line-height: 1.2; }
 header nav a { color: var(--text); text-decoration: none; opacity: .8; }
 header nav a:hover { opacity: 1; }
 
@@ -95,6 +95,7 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 640px) {
   .grid-2 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
+  .site-title { font-size: 1.3rem; }
 }
 
 
