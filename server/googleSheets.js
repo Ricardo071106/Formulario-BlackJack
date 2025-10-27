@@ -1,4 +1,5 @@
 const { google } = require('googleapis');
+const fs = require('fs');
 
 function isEnabled() {
   return String(process.env.GOOGLE_SHEETS_ENABLED || '').toLowerCase() === 'true';
@@ -7,6 +8,20 @@ function isEnabled() {
 function getAuthClient() {
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const credsPath = process.env.GOOGLE_CREDENTIALS_JSON_PATH;
+
+  if ((!clientEmail || !privateKey) && credsPath) {
+    try {
+      const raw = fs.readFileSync(credsPath, 'utf8');
+      const json = JSON.parse(raw);
+      if (!clientEmail) privateKey = (privateKey ?? json.private_key);
+      if (!clientEmail) process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = json.client_email;
+      if (!privateKey) process.env.GOOGLE_PRIVATE_KEY = json.private_key;
+    } catch (_) {
+      // ignore read errors
+    }
+  }
+
   if (!clientEmail || !privateKey) return null;
   // Handle escaped newlines in env vars
   privateKey = privateKey.replace(/\\n/g, '\n');
