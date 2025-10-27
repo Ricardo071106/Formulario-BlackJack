@@ -59,7 +59,7 @@ input[type="text"], input[type="email"], input[type="tel"] {
   border: 1px solid var(--outline);
   background: transparent;
   color: var(--text);
-  padding: 10px 14px;
+  padding: 12px 18px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -93,6 +93,8 @@ th, td {
 th { color: var(--muted); font-weight: 600; }
 
 .footer { opacity: .7; text-align: center; margin-top: 20px; }
+
+.form-actions { display: flex; justify-content: center; }
 
 @media (max-width: 640px) {
   .grid-2 { grid-template-columns: 1fr; }
