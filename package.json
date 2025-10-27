@@ -1,0 +1,30 @@
+{
+  "name": "rifa-node-express",
+  "version": "1.0.0",
+  "description": "Aplicação de rifa 0001-9999 com Node.js, Express e SQLite",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "rifa",
+    "express",
+    "sqlite",
+    "sse"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
+

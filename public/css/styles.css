@@ -1,0 +1,92 @@
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --primary: #22c55e;
+  --primary-700: #15803d;
+  --outline: #334155;
+  --danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+header.container { display: flex; align-items: center; justify-content: space-between; }
+header h1 { margin: 0; font-size: 1.5rem; }
+header nav a { color: var(--text); text-decoration: none; opacity: .8; }
+header nav a:hover { opacity: 1; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+
+h2 { margin-top: 0; }
+
+label { display: flex; flex-direction: column; gap: 6px; font-size: .95rem; }
+input[type="text"], input[type="email"], input[type="tel"] {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--outline);
+  background: #0b1220;
+  color: var(--text);
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; }
+
+.btn-row { display: flex; gap: 8px; }
+.btn {
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn.primary { background: var(--primary); color: #06200f; border-color: var(--primary-700); }
+.btn.primary:hover { background: var(--primary-700); color: #fff; }
+.btn.secondary { background: #1f2937; }
+.btn.outline { background: transparent; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.checkbox { display: flex; align-items: center; gap: 10px; margin: 12px 0 8px; }
+
+.status { min-height: 24px; margin: 8px 0; color: var(--muted); }
+.status.error { color: var(--danger); }
+.status.success { color: var(--primary); }
+
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  border-bottom: 1px solid var(--outline);
+  text-align: left;
+  padding: 10px 8px;
+  white-space: nowrap;
+}
+th { color: var(--muted); font-weight: 600; }
+
+.footer { opacity: .7; text-align: center; margin-top: 20px; }
+
+@media (max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+
