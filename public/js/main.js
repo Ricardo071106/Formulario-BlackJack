@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cpf = document.getElementById('cpf');
   const phone = document.getElementById('phone');
   const email = document.getElementById('email');
+  const store = document.getElementById('store');
   const number = document.getElementById('number');
   const accepted = document.getElementById('accepted');
   const statusEl = document.getElementById('status');
@@ -92,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cpf: onlyDigits(cpf.value),
       phone: phone.value,
       email: email.value.trim(),
+      store: store.value.trim(),
       number: normalizedNumber,
       accepted: accepted.checked
     };

@@ -34,6 +34,7 @@ db.serialize(() => {
       cpf TEXT NOT NULL,
       phone TEXT NOT NULL,
       email TEXT NOT NULL,
+      store TEXT,
       raffle_number TEXT NOT NULL UNIQUE,
       accepted_rules INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -45,6 +46,15 @@ db.serialize(() => {
       // older migration mistake guard: if typo breaks, ignore; we already have UNIQUE on column
     }
   );
+
+  // Lightweight migration: ensure column 'store' exists for older DBs
+  db.all('PRAGMA table_info(participants);', (err, rows) => {
+    if (err) return; // best-effort
+    const hasStore = Array.isArray(rows) && rows.some((r) => String(r.name) === 'store');
+    if (!hasStore) {
+      db.run('ALTER TABLE participants ADD COLUMN store TEXT;', () => {});
+    }
+  });
 });
 
 // SSE clients
@@ -162,7 +172,7 @@ app.get('/random-number', (req, res) => {
 });
 
 app.post('/reserve-number', (req, res) => {
-  const { fullName, cpf, phone, email, number, accepted } = req.body || {};
+  const { fullName, cpf, phone, email, store, number, accepted } = req.body || {};
 
   const errors = [];
   if (!fullName || String(fullName).trim().length < 3) errors.push('Nome inválido.');
@@ -170,6 +180,7 @@ app.post('/reserve-number', (req, res) => {
   if (!isValidPhone(phone)) errors.push('Telefone inválido.');
   if (!isValidEmail(email)) errors.push('E-mail inválido.');
   if (accepted !== true && accepted !== 'true' && accepted !== 1 && accepted !== '1' && accepted !== 'on') errors.push('É necessário aceitar o regulamento.');
+  if (!store || String(store).trim().length < 2) errors.push('Loja inválida.');
 
   const raffleNumber = formatRaffleNumber(number);
   if (!raffleNumber) errors.push('Número da rifa inválido.');
@@ -179,13 +190,13 @@ app.post('/reserve-number', (req, res) => {
   }
 
   const acceptedRules = 1;
-  const insertSql = `INSERT INTO participants (full_name, cpf, phone, email, raffle_number, accepted_rules) VALUES (?, ?, ?, ?, ?, ?)`;
+  const insertSql = `INSERT INTO participants (full_name, cpf, phone, email, store, raffle_number, accepted_rules) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
   db.serialize(() => {
     db.run('BEGIN IMMEDIATE TRANSACTION');
     db.run(
       insertSql,
-      [String(fullName).trim(), onlyDigits(cpf), onlyDigits(phone), String(email).trim(), raffleNumber, acceptedRules],
+      [String(fullName).trim(), onlyDigits(cpf), onlyDigits(phone), String(email).trim(), String(store).trim(), raffleNumber, acceptedRules],
       function (err) {
         if (err) {
           db.run('ROLLBACK');
@@ -205,6 +216,7 @@ app.post('/reserve-number', (req, res) => {
             cpf: onlyDigits(cpf),
             phone: onlyDigits(phone),
             email: String(email).trim(),
+            store: String(store).trim(),
             raffle_number: raffleNumber,
             accepted_rules: acceptedRules,
             created_at: new Date().toISOString(),
@@ -218,7 +230,7 @@ app.post('/reserve-number', (req, res) => {
 });
 
 app.get('/participants', (req, res) => {
-  db.all('SELECT id, full_name, cpf, phone, email, raffle_number, accepted_rules, created_at FROM participants ORDER BY created_at DESC, id DESC', (err, rows) => {
+  db.all('SELECT id, full_name, cpf, phone, email, store, raffle_number, accepted_rules, created_at FROM participants ORDER BY created_at DESC, id DESC', (err, rows) => {
     if (err) return res.status(500).json({ ok: false, message: 'Erro no banco.' });
     return res.json({ ok: true, participants: rows || [] });
   });

@@ -21,6 +21,7 @@ function renderRows(rows){
       <td><strong>${r.raffle_number}</strong></td>
       <td>${r.full_name}</td>
       <td>${fmtCPF(r.cpf)}</td>
+      <td>${r.store || ''}</td>
       <td>${fmtPhone(r.phone)}</td>
       <td>${r.email}</td>
     `;

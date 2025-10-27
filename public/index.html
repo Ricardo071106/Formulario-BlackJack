@@ -13,7 +13,6 @@
 
     <main class="container">
       <section class="card">
-        <h2>Participar</h2>
         <form id="raffle-form" novalidate>
           <div class="grid-2">
             <label>
@@ -37,9 +36,14 @@
             </label>
           </div>
 
+          <label>
+            Loja
+            <input type="text" id="store" name="store" placeholder="Nome do estabelecimento" required />
+          </label>
+
           <div class="grid-3">
             <label>
-              Número da rifa (0001-9999)
+              Escolha uma milhar
               <input type="text" id="number" name="number" placeholder="0001" inputmode="numeric" maxlength="4" required />
             </label>
             <div class="btn-row">
