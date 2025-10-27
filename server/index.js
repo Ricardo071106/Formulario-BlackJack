@@ -147,33 +147,84 @@ function formatRaffleNumber(input) {
   return String(num).padStart(4, '0');
 }
 
+async function listTakenNumbersFromSheets() {
+  if (String(process.env.GOOGLE_SHEETS_ENABLED || '').toLowerCase() !== 'true') return null;
+  try {
+    const { google } = require('googleapis');
+    const auth = require('./googleSheets').getAuthClient?.() || null;
+    if (!auth) return null;
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME || 'Participants';
+    const escaped = String(sheetName).replace(/'/g, "''");
+    const range = `'${escaped}'!B2:B10000`;
+    const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+    const rows = resp?.data?.values || [];
+    const taken = new Set();
+    for (const r of rows) {
+      const v = (r && r[0]) || '';
+      const digits = onlyDigits(v);
+      if (!digits) continue;
+      const num = parseInt(digits, 10);
+      if (!Number.isNaN(num) && num>=1 && num<=9999) taken.add(String(num).padStart(4, '0'));
+    }
+    return taken;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Routes
-app.post('/check-number', (req, res) => {
+app.post('/check-number', async (req, res) => {
   const formatted = formatRaffleNumber(req.body?.number);
   if (!formatted) {
     return res.status(400).json({ ok: false, message: 'Número inválido. Use 0001 a 9999.' });
   }
+  try {
+    const sheetsTaken = await listTakenNumbersFromSheets();
+    if (sheetsTaken && sheetsTaken.has(formatted)) {
+      return res.json({ ok: true, number: formatted, available: false, source: 'sheets' });
+    }
+  } catch (_) {}
   db.get('SELECT 1 FROM participants WHERE raffle_number = ? LIMIT 1', [formatted], (err, row) => {
     if (err) return res.status(500).json({ ok: false, message: 'Erro no banco de dados.' });
-    return res.json({ ok: true, number: formatted, available: !row });
+    return res.json({ ok: true, number: formatted, available: !row, source: 'db' });
   });
 });
 
-app.get('/random-number', (req, res) => {
-  db.all('SELECT raffle_number FROM participants', (err, rows) => {
-    if (err) return res.status(500).json({ ok: false, message: 'Erro no banco.' });
-    const used = new Set((rows || []).map(r => r.raffle_number));
-    const available = [];
-    for (let i = 1; i <= 9999; i++) {
-      const num = String(i).padStart(4, '0');
-      if (!used.has(num)) available.push(num);
-    }
-    if (available.length === 0) {
-      return res.json({ ok: true, number: null, message: 'Sem números disponíveis.' });
-    }
-    const pick = available[Math.floor(Math.random() * available.length)];
-    return res.json({ ok: true, number: pick });
-  });
+app.get('/random-number', async (req, res) => {
+  try {
+    const sheetsTaken = await listTakenNumbersFromSheets();
+    db.all('SELECT raffle_number FROM participants', (err, rows) => {
+      if (err) return res.status(500).json({ ok: false, message: 'Erro no banco.' });
+      const used = new Set((rows || []).map(r => r.raffle_number));
+      if (sheetsTaken) for (const n of sheetsTaken) used.add(n);
+      const available = [];
+      for (let i = 1; i <= 9999; i++) {
+        const num = String(i).padStart(4, '0');
+        if (!used.has(num)) available.push(num);
+      }
+      if (available.length === 0) {
+        return res.json({ ok: true, number: null, message: 'Sem números disponíveis.' });
+      }
+      const pick = available[Math.floor(Math.random() * available.length)];
+      return res.json({ ok: true, number: pick });
+    });
+  } catch (_) {
+    // fallback to DB only
+    db.all('SELECT raffle_number FROM participants', (err, rows) => {
+      if (err) return res.status(500).json({ ok: false, message: 'Erro no banco.' });
+      const used = new Set((rows || []).map(r => r.raffle_number));
+      const available = [];
+      for (let i = 1; i <= 9999; i++) {
+        const num = String(i).padStart(4, '0');
+        if (!used.has(num)) available.push(num);
+      }
+      if (available.length === 0) return res.json({ ok: true, number: null, message: 'Sem números disponíveis.' });
+      const pick = available[Math.floor(Math.random() * available.length)];
+      return res.json({ ok: true, number: pick });
+    });
+  }
 });
 
 app.post('/reserve-number', (req, res) => {

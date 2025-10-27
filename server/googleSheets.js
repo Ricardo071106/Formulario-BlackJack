@@ -35,6 +35,16 @@ function getAuthClient() {
   return auth;
 }
 
+function onlyDigits(str) {
+  return String(str || '').replace(/\D+/g, '');
+}
+
+function pad4(n) {
+  const num = typeof n === 'number' ? n : parseInt(onlyDigits(n || ''), 10);
+  if (!num || num < 1 || num > 9999) return null;
+  return String(num).padStart(4, '0');
+}
+
 async function appendParticipant(participant) {
   if (!isEnabled()) return { ok: false, skipped: true, reason: 'disabled' };
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
@@ -85,7 +95,7 @@ async function appendParticipant(participant) {
 
   const values = [[
     formatBrazilTime(participant.created_at),
-    participant.raffle_number,
+    pad4(participant.raffle_number) || participant.raffle_number,
     participant.full_name,
     participant.cpf,
     participant.store || '',
@@ -155,7 +165,7 @@ async function appendParticipantsBatch(participants) {
   }
   const values = participants.map((p) => [
     formatBrazilTime(p.created_at),
-    p.raffle_number,
+    pad4(p.raffle_number) || p.raffle_number,
     p.full_name,
     p.cpf,
     p.store || '',
@@ -178,6 +188,6 @@ async function appendParticipantsBatch(participants) {
   }
 }
 
-module.exports = { appendParticipant, appendParticipantsBatch };
+module.exports = { appendParticipant, appendParticipantsBatch, getAuthClient };
 
 
