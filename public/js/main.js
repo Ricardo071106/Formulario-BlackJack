@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   store.addEventListener('blur', () => {
     const d = onlyDigits(store.value).slice(0,4);
-    if (!d) store.value = '0000';
+    if (!d) store.value = '';
     else {
       const n = parseInt(d||'');
       if (!Number.isNaN(n) && n>=0 && n<=9999) store.value = pad4(n);
