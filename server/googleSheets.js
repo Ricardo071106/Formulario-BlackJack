@@ -46,6 +46,11 @@ async function appendParticipant(participant) {
 
   const sheets = google.sheets({ version: 'v4', auth });
 
+  function buildRange(sheetName) {
+    const escaped = String(sheetName).replace(/'/g, "''");
+    return `'${escaped}'!A1`;
+  }
+
   const values = [[
     participant.id,
     participant.created_at,
@@ -60,7 +65,7 @@ async function appendParticipant(participant) {
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A1`,
+      range: buildRange(sheetName),
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values },
@@ -82,6 +87,10 @@ async function appendParticipantsBatch(participants) {
   if (!auth) return { ok: false, skipped: true, reason: 'missing credentials' };
 
   const sheets = google.sheets({ version: 'v4', auth });
+  function buildRange(sheetName) {
+    const escaped = String(sheetName).replace(/'/g, "''");
+    return `'${escaped}'!A1`;
+  }
   const values = participants.map((p) => [
     p.id,
     p.created_at,
@@ -95,7 +104,7 @@ async function appendParticipantsBatch(participants) {
   try {
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A1`,
+      range: buildRange(sheetName),
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values },
