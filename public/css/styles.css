@@ -27,6 +27,7 @@ body {
 header.container { display: flex; align-items: center; justify-content: space-between; }
 header h1 { margin: 0; font-size: 1.5rem; }
 .site-title { flex: 1; text-align: center; font-size: clamp(1.6rem, 6vw, 3rem); white-space: nowrap; line-height: 1.2; }
+.site-subtitle { width: 100%; text-align: center; margin-top: 4px; font-size: .9rem; color: var(--muted); }
 header nav a { color: var(--text); text-decoration: none; opacity: .8; }
 header nav a:hover { opacity: 1; }
 
@@ -96,6 +97,7 @@ th { color: var(--muted); font-weight: 600; }
   .grid-2 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
   .site-title { font-size: clamp(1.2rem, 7vw, 1.8rem); }
+  .site-subtitle { font-size: .85rem; }
 }
 
 
