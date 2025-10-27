@@ -174,6 +174,32 @@ async function listTakenNumbersFromSheets() {
   }
 }
 
+async function listCpfsFromSheets() {
+  if (String(process.env.GOOGLE_SHEETS_ENABLED || '').toLowerCase() !== 'true') return null;
+  try {
+    const { google } = require('googleapis');
+    const auth = require('./googleSheets').getAuthClient?.() || null;
+    if (!auth) return null;
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME || 'Participants';
+    const escaped = String(sheetName).replace(/'/g, "''");
+    // Coluna D tem CPF (cabeçalho na linha 1), então dados começam na linha 2
+    const range = `'${escaped}'!D2:D10000`;
+    const resp = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+    const rows = resp?.data?.values || [];
+    const taken = new Set();
+    for (const r of rows) {
+      const v = (r && r[0]) || '';
+      const digits = onlyDigits(v);
+      if (digits && digits.length === 11) taken.add(digits);
+    }
+    return taken;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Routes
 app.post('/check-number', async (req, res) => {
   const formatted = formatRaffleNumber(req.body?.number);
@@ -254,7 +280,24 @@ app.post('/reserve-number', async (req, res) => {
     if (sheetsTaken && sheetsTaken.has(raffleNumber)) {
       return res.status(409).json({ ok: false, message: 'Número já reservado (planilha).' });
     }
+    const sheetsCpfs = await listCpfsFromSheets();
+    if (sheetsCpfs && sheetsCpfs.has(onlyDigits(cpf))) {
+      return res.status(409).json({ ok: false, message: 'CPF já possui uma reserva (planilha).' });
+    }
   } catch (_) { /* best-effort */ }
+
+  // Checagem rápida no banco local para evitar duplicidade imediata
+  try {
+    const existingCpf = await new Promise((resolve, reject) => {
+      db.get('SELECT 1 FROM participants WHERE cpf = ? LIMIT 1', [onlyDigits(cpf)], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+    if (existingCpf) {
+      return res.status(409).json({ ok: false, message: 'CPF já possui uma reserva.' });
+    }
+  } catch (_) { /* ignore db error here; will fail on insert if needed */ }
 
   db.serialize(() => {
     db.run('BEGIN IMMEDIATE TRANSACTION');
