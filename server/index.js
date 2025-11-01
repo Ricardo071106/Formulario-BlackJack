@@ -20,6 +20,12 @@ app.get('/regulamento.pdf', (req, res) => {
   if (fs.existsSync(filePath)) return res.sendFile(filePath);
   return res.status(404).send('Arquivo não encontrado');
 });
+// Serve background image from project root with a clean URL
+app.get('/bg.jpeg', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'WhatsApp Image 2025-11-01 at 17.44.45.jpeg');
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  return res.status(404).send('Imagem não encontrada');
+});
 
 // Ensure data folder exists
 const dataDir = path.join(__dirname, '..', 'data');
