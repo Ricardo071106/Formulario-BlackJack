@@ -11,20 +11,27 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files
+// Static files with cache disabled for HTML/CSS/JS to avoid stale assets on deploys
 const publicDir = path.join(__dirname, '..', 'public');
-app.use(express.static(publicDir));
+app.use(
+  express.static(publicDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: 0,
+    setHeaders: (res, filePath) => {
+      if (/\.(?:css|js|html)$/.test(filePath)) {
+        res.setHeader('Cache-Control', 'no-store');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=0');
+      }
+    },
+  })
+);
 // Serve regulamento.pdf from project root if present
 app.get('/regulamento.pdf', (req, res) => {
   const filePath = path.join(__dirname, '..', 'regulamento.pdf');
   if (fs.existsSync(filePath)) return res.sendFile(filePath);
   return res.status(404).send('Arquivo não encontrado');
-});
-// Serve background image from project root with a clean URL
-app.get('/bg.jpeg', (req, res) => {
-  const filePath = path.join(__dirname, '..', 'WhatsApp Image 2025-11-01 at 17.44.45.jpeg');
-  if (fs.existsSync(filePath)) return res.sendFile(filePath);
-  return res.status(404).send('Imagem não encontrada');
 });
 
 // Ensure data folder exists
