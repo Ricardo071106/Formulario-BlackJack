@@ -11,26 +11,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files with cache disabled for HTML/CSS/JS to avoid stale assets on deploys
+// Static files
 const publicDir = path.join(__dirname, '..', 'public');
-app.use(
-  express.static(publicDir, {
-    etag: false,
-    lastModified: false,
-    maxAge: 0,
-    setHeaders: (res, filePath) => {
-      if (/\.(?:css|js|html)$/.test(filePath)) {
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-        res.setHeader('Surrogate-Control', 'no-store');
-        res.setHeader('CDN-Cache-Control', 'no-store');
-      } else {
-        res.setHeader('Cache-Control', 'public, max-age=0');
-      }
-    },
-  })
-);
+app.use(express.static(publicDir));
 // Serve regulamento.pdf from project root if present
 app.get('/regulamento.pdf', (req, res) => {
   const filePath = path.join(__dirname, '..', 'regulamento.pdf');
