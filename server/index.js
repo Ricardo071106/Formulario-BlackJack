@@ -16,6 +16,8 @@ const publicDir = path.join(__dirname, '..', 'public');
 app.use(express.static(publicDir));
 // Serve regulamento.pdf from project root if present
 app.get('/regulamento.pdf', (req, res) => {
+  const altPath = path.join(__dirname, '..', 'regulamento (1).pdf');
+  if (fs.existsSync(altPath)) return res.sendFile(altPath);
   const filePath = path.join(__dirname, '..', 'regulamento.pdf');
   if (fs.existsSync(filePath)) return res.sendFile(filePath);
   return res.status(404).send('Arquivo não encontrado');
