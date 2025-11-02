@@ -16,10 +16,19 @@ const publicDir = path.join(__dirname, '..', 'public');
 app.use(express.static(publicDir));
 // Serve regulamento.pdf from project root if present
 app.get('/regulamento.pdf', (req, res) => {
-  const altPath = path.join(__dirname, '..', 'regulamento (1).pdf');
-  if (fs.existsSync(altPath)) return res.sendFile(altPath);
-  const filePath = path.join(__dirname, '..', 'regulamento.pdf');
-  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  const rootDir = path.join(__dirname, '..');
+  // Prefer explicit names
+  const explicitA = path.join(rootDir, 'regulamento (1).pdf');
+  if (fs.existsSync(explicitA)) return res.sendFile(explicitA);
+  const explicitB = path.join(rootDir, 'regulamento.pdf');
+  if (fs.existsSync(explicitB)) return res.sendFile(explicitB);
+  // Fallback: first .pdf found in project root
+  try {
+    const files = fs.readdirSync(rootDir).filter(f => f.toLowerCase().endsWith('.pdf'));
+    if (files.length > 0) {
+      return res.sendFile(path.join(rootDir, files[0]));
+    }
+  } catch (_) {}
   return res.status(404).send('Arquivo não encontrado');
 });
 
