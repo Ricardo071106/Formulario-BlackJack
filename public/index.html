@@ -14,55 +14,8 @@
 
     <main class="container">
       <section class="card">
-        <form id="raffle-form" novalidate>
-          <div class="grid-2">
-            <label>
-              Nome completo
-              <input type="text" id="fullName" name="fullName" placeholder="Seu nome" required />
-            </label>
-            <label>
-              CPF
-              <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" required />
-            </label>
-          </div>
-
-          <div class="grid-2">
-            <label>
-              Telefone
-              <input type="tel" id="phone" name="phone" placeholder="(11) 99999-9999" required />
-            </label>
-            <label>
-              E-mail
-              <input type="email" id="email" name="email" placeholder="voce@email.com" required />
-            </label>
-          </div>
-
-          <div class="grid-3">
-            <label>
-              Loja/Cod
-              <input type="text" id="store" name="store" inputmode="numeric" maxlength="4" required />
-            </label>
-            <div></div>
-          </div>
-
-          <div class="grid-3">
-            <label>
-              Escolha uma milhar
-              <input type="text" id="number" name="number" placeholder="0000" inputmode="numeric" maxlength="4" required />
-            </label>
-            <div class="btn-row">
-              <button type="button" id="btnRandom" class="btn secondary">Escolher aleatório</button>
-              <button type="button" id="btnCheck" class="btn outline">Verificar</button>
-            </div>
-          </div>
-          <div class="regulamento-note"><a href="/regulamento.pdf" target="_blank" rel="noopener">Confira o regulamento</a></div>
-
-          <div id="status" class="status" role="status" aria-live="polite"></div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn primary">Enviar</button>
-          </div>
-        </form>
+        <div class="final-message">Sorteio Finalizado</div>
+        <div class="regulamento-note"><a href="/regulamento.pdf" target="_blank" rel="noopener">Confira o regulamento</a></div>
       </section>
     </main>
 

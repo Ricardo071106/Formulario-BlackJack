@@ -96,6 +96,14 @@ th { color: var(--muted); font-weight: 600; }
 
 .form-actions { display: flex; justify-content: center; }
 
+/* Finalizado */
+.final-message {
+  text-align: center;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 8vw, 3.2rem);
+  padding: 60px 0 12px;
+}
+
 @media (max-width: 640px) {
   .grid-2 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
